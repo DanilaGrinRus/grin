@@ -490,6 +490,11 @@ impl TrackingAdapter {
 	}
 }
 
+#[cfg(test)]
+pub(crate) fn tracking_adapter_for_test(adapter: Arc<dyn NetAdapter>) -> Arc<dyn NetAdapter> {
+	Arc::new(TrackingAdapter::new(adapter))
+}
+
 impl ChainAdapter for TrackingAdapter {
 	fn total_difficulty(&self) -> Result<Difficulty, chain::Error> {
 		self.adapter.total_difficulty()
@@ -580,6 +585,15 @@ impl ChainAdapter for TrackingAdapter {
 		peer_info: &PeerInfo,
 	) -> Result<Option<Vec<core::BlockHeader>>, chain::Error> {
 		self.adapter.locate_header_segment(id, peer_info)
+	}
+
+	fn get_header_proofs(
+		&self,
+		anchor: Hash,
+		heights: &[u64],
+		peer_info: &PeerInfo,
+	) -> Result<Option<crate::msg::HeaderProofs>, chain::Error> {
+		self.adapter.get_header_proofs(anchor, heights, peer_info)
 	}
 
 	fn get_block(&self, h: Hash, peer_info: &PeerInfo) -> Option<core::Block> {

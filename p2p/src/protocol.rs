@@ -835,6 +835,35 @@ mod tests {
 	}
 
 	#[test]
+	fn header_proofs_are_forwarded_through_peer_adapters() {
+		global::set_local_chain_type(global::ChainTypes::AutomatedTesting);
+		let dir = tempfile::tempdir().expect("temporary peer store");
+		let store = crate::store::PeerStore::new(dir.path().to_str().expect("UTF-8 path"))
+			.expect("peer store");
+		let source = Arc::new(HeaderProofsTestAdapter {
+			proofs: canned_header_proofs(),
+		});
+		let peers = Arc::new(crate::peers::Peers::new(
+			store,
+			source,
+			crate::types::P2PConfig::default(),
+		));
+		let adapter = crate::peer::tracking_adapter_for_test(peers);
+		let protocol = Protocol::new(
+			adapter,
+			test_peer_info(Capabilities::UNKNOWN),
+			Arc::new(AtomicBool::new(false)),
+		);
+		let result = protocol
+			.consume(header_proofs_request(vec![0]))
+			.expect("request handling");
+		assert!(
+			matches!(result, Consumed::Response(_)),
+			"proof request did not reach source adapter"
+		);
+	}
+
+	#[test]
 	fn get_header_proofs_served_without_requester_capabilities() {
 		// REVIEW fix: HEADER_PROOF_HIST is a server capability; the requester
 		// does not have to advertise HEADER_PROOF_HIST or PIHD_HIST.

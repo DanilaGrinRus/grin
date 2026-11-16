@@ -707,6 +707,15 @@ impl ChainAdapter for Peers {
 		self.adapter.locate_header_segment(id, peer_info)
 	}
 
+	fn get_header_proofs(
+		&self,
+		anchor: Hash,
+		heights: &[u64],
+		peer_info: &PeerInfo,
+	) -> Result<Option<crate::msg::HeaderProofs>, chain::Error> {
+		self.adapter.get_header_proofs(anchor, heights, peer_info)
+	}
+
 	fn get_block(&self, h: Hash, peer_info: &PeerInfo) -> Option<core::Block> {
 		self.adapter.get_block(h, peer_info)
 	}
